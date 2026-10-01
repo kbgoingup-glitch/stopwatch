@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#0b0f17">
-  <meta name="description" content="집중을 방해하지 않는 정확하고 간결한 온라인 스톱워치">
-  <title>스톱워치</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230b0f17'/%3E%3Ccircle cx='32' cy='35' r='18' fill='none' stroke='%23b8ff3d' stroke-width='5'/%3E%3Cpath d='M27 9h10M32 17v18l9 6' stroke='%23b8ff3d' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <meta name="theme-color" content="#05507d">
+  <meta name="description" content="POSCO 브랜드 컬러로 디자인한 정밀 스톱워치와 랩 타이머">
+  <title>POSCO WORK TIMER</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2305507D'/%3E%3Ccircle cx='32' cy='34' r='18' fill='none' stroke='white' stroke-width='5'/%3E%3Cpath d='M27 9h10M32 16v18l9 6' stroke='%2300A5E5' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
   <style>
     :root {
       color-scheme: dark;
@@ -218,15 +218,186 @@
       *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
     }
   </style>
+  <style id="posco-theme">
+    :root {
+      color-scheme: light;
+      --bg: #edf4f8;
+      --panel: #ffffff;
+      --panel-soft: #f4f8fb;
+      --ink: #112b3d;
+      --muted: #637989;
+      --line: #d6e1e8;
+      --accent: #05507d;
+      --accent-ink: #ffffff;
+      --light-blue: #00a5e5;
+      --steel: #8ca5b5;
+    }
+
+    body {
+      background:
+        linear-gradient(118deg, transparent 0 61%, rgba(0, 165, 229, .07) 61% 64%, transparent 64% 100%),
+        linear-gradient(118deg, transparent 0 73%, rgba(5, 80, 125, .05) 73% 77%, transparent 77% 100%),
+        var(--bg);
+      color: var(--ink);
+    }
+
+    body::before {
+      position: fixed;
+      inset: 0 0 auto;
+      height: 5px;
+      background: linear-gradient(90deg, #05507d 0 72%, #00a5e5 72% 100%);
+      content: "";
+      z-index: 5;
+    }
+
+    .shell {
+      width: min(100% - 40px, 1080px);
+      padding: 34px 0 56px;
+    }
+
+    header {
+      min-height: 66px;
+      margin-bottom: 34px;
+      padding: 0 4px 18px;
+      border-bottom: 1px solid rgba(5, 80, 125, .18);
+    }
+
+    .brand { display: flex; align-items: center; min-width: 0; }
+    .brand-logo { display: block; width: 126px; height: 38px; object-fit: contain; object-position: left center; mix-blend-mode: multiply; }
+    .brand-fallback { color: #05507d; font-size: 1.75rem; font-weight: 900; letter-spacing: -.06em; }
+    .brand-product { margin-left: 18px; padding-left: 18px; border-left: 1px solid #b8c9d3; color: #486576; font-size: .78rem; font-weight: 800; letter-spacing: .15em; }
+
+    .status {
+      min-height: 34px;
+      padding: 0 13px;
+      border: 1px solid #d2e1e9;
+      border-radius: 999px;
+      background: #fff;
+      color: #587182;
+      font-weight: 700;
+    }
+
+    .status::before { background: #a7bac6; }
+    .status.running::before { background: var(--light-blue); box-shadow: 0 0 0 4px rgba(0, 165, 229, .13); }
+
+    .timer-panel {
+      position: relative;
+      padding: 38px 34px 34px;
+      overflow: hidden;
+      border: 1px solid rgba(5, 80, 125, .14);
+      border-radius: 2px;
+      background: rgba(255, 255, 255, .92);
+      box-shadow: 0 22px 70px rgba(30, 66, 89, .11);
+    }
+
+    .timer-panel::before,
+    .timer-panel::after {
+      position: absolute;
+      width: 74px;
+      height: 74px;
+      border-color: var(--light-blue);
+      content: "";
+      pointer-events: none;
+    }
+
+    .timer-panel::before { top: 14px; left: 14px; border-top: 2px solid; border-left: 2px solid; }
+    .timer-panel::after { right: 14px; bottom: 14px; border-right: 2px solid; border-bottom: 2px solid; }
+
+    .timer-kicker {
+      margin: 0 0 28px;
+      color: #557080;
+      text-align: center;
+      font-size: .75rem;
+      font-weight: 800;
+      letter-spacing: .2em;
+    }
+
+    .watch {
+      width: min(100%, 460px);
+      margin-bottom: 32px;
+      border: 1px solid rgba(5, 80, 125, .26);
+      background:
+        radial-gradient(circle, #fff 0 57%, transparent 57.5%),
+        conic-gradient(from -34deg, rgba(0,165,229,.15), rgba(5,80,125,.035), rgba(0,165,229,.15));
+      box-shadow:
+        inset 0 0 0 12px #fff,
+        inset 0 0 0 13px rgba(5, 80, 125, .11),
+        0 18px 55px rgba(5, 80, 125, .12);
+    }
+
+    .watch::before {
+      inset: 23px;
+      border: 0;
+      background: repeating-conic-gradient(from -90deg, rgba(5,80,125,.45) 0deg .7deg, transparent .7deg 6deg);
+      mask: radial-gradient(circle, transparent 94%, #000 94.5%);
+    }
+
+    .watch::after {
+      inset: 7px;
+      background: conic-gradient(from -90deg, transparent 0 24.3%, #00a5e5 24.3% 25.7%, transparent 25.7% 49.3%, #05507d 49.3% 50.7%, transparent 50.7% 74.3%, #00a5e5 74.3% 75.7%, transparent 75.7%);
+      mask: radial-gradient(circle, transparent 96.8%, #000 97.2%);
+    }
+
+    .time { color: #083d5d; font-weight: 760; letter-spacing: -.07em; }
+    .centiseconds { color: var(--light-blue); font-weight: 800; }
+
+    .controls { width: min(100%, 560px); }
+    .control {
+      min-height: 58px;
+      border-color: #cad9e2;
+      border-radius: 2px;
+      background: #fff;
+      color: #24495f;
+      box-shadow: 0 5px 16px rgba(41, 82, 107, .05);
+    }
+    .control:hover:not(:disabled) { border-color: #7fa8bf; background: #f6fafc; }
+    .control:focus-visible { outline-color: rgba(0, 165, 229, .4); }
+    .control.primary { border-color: #05507d; background: #05507d; color: #fff; }
+    .control.primary:hover:not(:disabled) { border-color: #063f62; background: #063f62; }
+
+    .shortcuts { color: #718794; }
+    kbd { border-color: #cbd9e1; background: #f7fafc; color: #355568; box-shadow: 0 1px 0 #bcccd5; }
+
+    .laps-section {
+      width: min(100%, 760px);
+      margin-top: 42px;
+      padding: 0 4px;
+    }
+    .laps-head { border-color: rgba(5, 80, 125, .22); }
+    h2 { color: #194b68; }
+    .lap-count, .lap-no, .empty { color: #718694; }
+    .lap { border-color: #dce6ec; }
+    .lap-split { color: #4a6c80; }
+    .lap-total { color: #05507d; }
+
+    @media (max-width: 560px) {
+      .shell { width: min(100% - 24px, 1080px); padding-top: 22px; }
+      header { min-height: 56px; margin-bottom: 22px; padding-bottom: 12px; }
+      .brand-logo { width: 98px; height: 30px; }
+      .brand-fallback { font-size: 1.4rem; }
+      .brand-product { margin-left: 11px; padding-left: 11px; font-size: .64rem; letter-spacing: .09em; }
+      .status { min-height: 30px; padding: 0 10px; font-size: .78rem; }
+      .timer-panel { padding: 28px 16px 24px; }
+      .timer-kicker { margin-bottom: 20px; }
+      .watch { margin-bottom: 24px; }
+      .watch::before { inset: 17px; }
+      .laps-section { margin-top: 32px; }
+    }
+  </style>
 </head>
 <body>
   <main class="shell">
     <header>
-      <h1>스톱워치</h1>
+      <h1 class="brand">
+        <img class="brand-logo" src="https://www.posco.co.kr/docs/kor7/jsp/resources/images/common/logo_foot.jpg" alt="POSCO" onerror="this.hidden=true;this.nextElementSibling.hidden=false">
+        <span class="brand-fallback" hidden>POSCO</span>
+        <span class="brand-product">WORK TIMER</span>
+      </h1>
       <span class="status" id="status">준비</span>
     </header>
 
-    <section aria-label="스톱워치">
+    <section class="timer-panel" aria-label="POSCO 스톱워치">
+      <p class="timer-kicker">PRECISION TIMEKEEPING</p>
       <div class="watch">
         <div class="time-wrap" aria-live="off" aria-atomic="true">
           <span class="time" id="time">00:00</span>
