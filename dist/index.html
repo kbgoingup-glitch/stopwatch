@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0f17">
+  <meta name="description" content="집중을 방해하지 않는 정확하고 간결한 온라인 스톱워치">
+  <title>스톱워치</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230b0f17'/%3E%3Ccircle cx='32' cy='35' r='18' fill='none' stroke='%23b8ff3d' stroke-width='5'/%3E%3Cpath d='M27 9h10M32 17v18l9 6' stroke='%23b8ff3d' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b0f17;
+      --panel: #121824;
+      --panel-soft: #171f2d;
+      --ink: #f5f7fb;
+      --muted: #8d98aa;
+      --line: #293346;
+      --accent: #b8ff3d;
+      --accent-ink: #101600;
+      --danger: #ff6b79;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      min-height: 100svh;
+      background:
+        radial-gradient(circle at 50% -10%, rgba(184, 255, 61, .1), transparent 34rem),
+        var(--bg);
+      color: var(--ink);
+      font-family: Inter, Pretendard, "Noto Sans KR", system-ui, -apple-system, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button { font: inherit; }
+
+    .shell {
+      width: min(100% - 32px, 760px);
+      margin: 0 auto;
+      padding: 36px 0 48px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 56px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: -.01em;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: .875rem;
+    }
+
+    .status::before {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #566174;
+      content: "";
+      transition: background .2s, box-shadow .2s;
+    }
+
+    .status.running::before {
+      background: var(--accent);
+      box-shadow: 0 0 0 5px rgba(184, 255, 61, .1);
+    }
+
+    .watch {
+      display: grid;
+      place-items: center;
+      width: min(100%, 520px);
+      aspect-ratio: 1;
+      margin: 0 auto 42px;
+      position: relative;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      background: linear-gradient(145deg, rgba(255,255,255,.025), rgba(255,255,255,0));
+      box-shadow: inset 0 0 0 12px rgba(255,255,255,.012), 0 32px 80px rgba(0,0,0,.32);
+    }
+
+    .watch::before,
+    .watch::after {
+      position: absolute;
+      inset: 22px;
+      border-radius: inherit;
+      border: 1px dashed rgba(141, 152, 170, .22);
+      content: "";
+    }
+
+    .watch::after {
+      inset: 0;
+      border: 0;
+      background: conic-gradient(from -90deg, transparent 0 24%, rgba(184,255,61,.7) 25%, transparent 26% 49%, rgba(184,255,61,.35) 50%, transparent 51% 74%, rgba(184,255,61,.7) 75%, transparent 76%);
+      mask: radial-gradient(circle, transparent 97%, #000 97.5%);
+    }
+
+    .time-wrap { text-align: center; z-index: 1; }
+
+    .time {
+      display: block;
+      font-variant-numeric: tabular-nums;
+      font-size: clamp(3.35rem, 13vw, 6.8rem);
+      font-weight: 650;
+      line-height: .95;
+      letter-spacing: -.065em;
+    }
+
+    .centiseconds {
+      display: block;
+      margin-top: 14px;
+      color: var(--accent);
+      font-variant-numeric: tabular-nums;
+      font-size: clamp(1.2rem, 4vw, 1.7rem);
+      letter-spacing: .12em;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      width: min(100%, 520px);
+      margin: 0 auto;
+    }
+
+    .control {
+      min-height: 56px;
+      padding: 0 18px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--panel);
+      color: var(--ink);
+      cursor: pointer;
+      font-weight: 700;
+      transition: transform .15s, border-color .15s, background .15s;
+      touch-action: manipulation;
+    }
+
+    .control:hover:not(:disabled) { border-color: #46546d; background: var(--panel-soft); }
+    .control:active:not(:disabled) { transform: translateY(2px); }
+    .control:focus-visible { outline: 3px solid rgba(184,255,61,.4); outline-offset: 3px; }
+    .control:disabled { opacity: .4; cursor: not-allowed; }
+    .control.primary { border-color: var(--accent); background: var(--accent); color: var(--accent-ink); }
+    .control.primary:hover:not(:disabled) { background: #c4ff5d; border-color: #c4ff5d; }
+
+    .shortcuts {
+      margin: 18px auto 0;
+      color: var(--muted);
+      text-align: center;
+      font-size: .8125rem;
+    }
+
+    kbd {
+      padding: 2px 6px;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      background: var(--panel);
+      color: #cbd2dd;
+      font-family: inherit;
+    }
+
+    .laps-section {
+      width: min(100%, 620px);
+      margin: 60px auto 0;
+    }
+
+    .laps-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    h2 { margin: 0; font-size: 1rem; }
+    .lap-count { color: var(--muted); font-size: .8125rem; }
+    .laps { margin: 0; padding: 0; list-style: none; }
+
+    .lap {
+      display: grid;
+      grid-template-columns: 56px 1fr 1fr;
+      gap: 16px;
+      padding: 16px 4px;
+      border-bottom: 1px solid rgba(41, 51, 70, .7);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .lap-no { color: var(--muted); }
+    .lap-split { color: #b7c0ce; text-align: right; }
+    .lap-total { font-weight: 700; text-align: right; }
+    .empty { padding: 28px 4px; color: var(--muted); text-align: center; font-size: .9rem; }
+
+    @media (max-width: 560px) {
+      .shell { width: min(100% - 24px, 760px); padding-top: 24px; }
+      header { margin-bottom: 36px; }
+      .watch { margin-bottom: 28px; }
+      .watch::before { inset: 14px; }
+      .controls { grid-template-columns: 1fr 1fr; }
+      .control.primary { grid-column: 1 / -1; grid-row: 1; }
+      .shortcuts { display: none; }
+      .laps-section { margin-top: 44px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <h1>스톱워치</h1>
+      <span class="status" id="status">준비</span>
+    </header>
+
+    <section aria-label="스톱워치">
+      <div class="watch">
+        <div class="time-wrap" aria-live="off" aria-atomic="true">
+          <span class="time" id="time">00:00</span>
+          <span class="centiseconds" id="centiseconds">.00</span>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button class="control" id="lap" type="button" disabled>랩</button>
+        <button class="control primary" id="toggle" type="button">시작</button>
+        <button class="control" id="reset" type="button" disabled>재설정</button>
+      </div>
+      <p class="shortcuts"><kbd>Space</kbd> 시작·일시정지 &nbsp; <kbd>L</kbd> 랩 &nbsp; <kbd>R</kbd> 재설정</p>
+    </section>
+
+    <section class="laps-section" aria-labelledby="laps-title">
+      <div class="laps-head">
+        <h2 id="laps-title">랩 기록</h2>
+        <span class="lap-count" id="lap-count">0개</span>
+      </div>
+      <ol class="laps" id="laps">
+        <li class="empty" id="empty">랩 버튼을 누르면 구간 기록이 표시됩니다.</li>
+      </ol>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      const timeEl = document.querySelector('#time');
+      const centisecondsEl = document.querySelector('#centiseconds');
+      const statusEl = document.querySelector('#status');
+      const toggleButton = document.querySelector('#toggle');
+      const lapButton = document.querySelector('#lap');
+      const resetButton = document.querySelector('#reset');
+      const lapsEl = document.querySelector('#laps');
+      const lapCountEl = document.querySelector('#lap-count');
+
+      let running = false;
+      let startedAt = 0;
+      let elapsedBeforeStart = 0;
+      let frameId = null;
+      let lapTimes = [];
+
+      const elapsed = () => running ? elapsedBeforeStart + performance.now() - startedAt : elapsedBeforeStart;
+
+      function parts(milliseconds) {
+        const totalCentiseconds = Math.floor(milliseconds / 10);
+        const centiseconds = totalCentiseconds % 100;
+        const totalSeconds = Math.floor(totalCentiseconds / 100);
+        const seconds = totalSeconds % 60;
+        const totalMinutes = Math.floor(totalSeconds / 60);
+        const minutes = totalMinutes % 60;
+        const hours = Math.floor(totalMinutes / 60);
+        return { hours, minutes, seconds, centiseconds };
+      }
+
+      function format(milliseconds, includeCentiseconds = false) {
+        const p = parts(milliseconds);
+        const lead = p.hours > 0
+          ? `${String(p.hours).padStart(2, '0')}:${String(p.minutes).padStart(2, '0')}`
+          : `${String(p.minutes).padStart(2, '0')}`;
+        const base = `${lead}:${String(p.seconds).padStart(2, '0')}`;
+        return includeCentiseconds ? `${base}.${String(p.centiseconds).padStart(2, '0')}` : base;
+      }
+
+      function renderTime() {
+        const current = elapsed();
+        const p = parts(current);
+        const lead = p.hours > 0
+          ? `${String(p.hours).padStart(2, '0')}:${String(p.minutes).padStart(2, '0')}`
+          : String(p.minutes).padStart(2, '0');
+        timeEl.textContent = `${lead}:${String(p.seconds).padStart(2, '0')}`;
+        centisecondsEl.textContent = `.${String(p.centiseconds).padStart(2, '0')}`;
+        timeEl.parentElement.setAttribute('aria-label', format(current, true));
+        if (running) frameId = requestAnimationFrame(renderTime);
+      }
+
+      function syncControls() {
+        toggleButton.textContent = running ? '일시정지' : (elapsedBeforeStart > 0 ? '계속' : '시작');
+        statusEl.textContent = running ? '측정 중' : (elapsedBeforeStart > 0 ? '일시정지' : '준비');
+        statusEl.classList.toggle('running', running);
+        lapButton.disabled = !running;
+        resetButton.disabled = elapsedBeforeStart === 0 && !running;
+      }
+
+      function start() {
+        if (running) return;
+        startedAt = performance.now();
+        running = true;
+        syncControls();
+        frameId = requestAnimationFrame(renderTime);
+      }
+
+      function pause() {
+        if (!running) return;
+        elapsedBeforeStart += performance.now() - startedAt;
+        running = false;
+        cancelAnimationFrame(frameId);
+        renderTime();
+        syncControls();
+      }
+
+      function toggle() { running ? pause() : start(); }
+
+      function renderLaps() {
+        lapsEl.replaceChildren();
+        if (!lapTimes.length) {
+          const empty = document.createElement('li');
+          empty.className = 'empty';
+          empty.textContent = '랩 버튼을 누르면 구간 기록이 표시됩니다.';
+          lapsEl.append(empty);
+        } else {
+          [...lapTimes].reverse().forEach((total, reversedIndex) => {
+            const index = lapTimes.length - reversedIndex - 1;
+            const previous = index === 0 ? 0 : lapTimes[index - 1];
+            const row = document.createElement('li');
+            row.className = 'lap';
+            row.innerHTML = `<span class="lap-no">${String(index + 1).padStart(2, '0')}</span><span class="lap-split">+${format(total - previous, true)}</span><span class="lap-total">${format(total, true)}</span>`;
+            lapsEl.append(row);
+          });
+        }
+        lapCountEl.textContent = `${lapTimes.length}개`;
+      }
+
+      function recordLap() {
+        if (!running) return null;
+        const total = elapsed();
+        lapTimes.push(total);
+        renderLaps();
+        return total;
+      }
+
+      function reset() {
+        running = false;
+        cancelAnimationFrame(frameId);
+        startedAt = 0;
+        elapsedBeforeStart = 0;
+        lapTimes = [];
+        renderTime();
+        renderLaps();
+        syncControls();
+      }
+
+      toggleButton.addEventListener('click', toggle);
+      lapButton.addEventListener('click', recordLap);
+      resetButton.addEventListener('click', reset);
+
+      document.addEventListener('keydown', (event) => {
+        if (event.repeat || event.target.matches('button, input, textarea, select')) return;
+        if (event.code === 'Space') { event.preventDefault(); toggle(); }
+        if (event.key.toLowerCase() === 'l') recordLap();
+        if (event.key.toLowerCase() === 'r' && !resetButton.disabled) reset();
+      });
+
+      document.addEventListener('visibilitychange', () => {
+        if (running && !document.hidden) renderTime();
+      });
+
+      function registerWebMcpTools() {
+        const context = document.modelContext;
+        if (!context?.registerTool) return;
+        const noInput = { type: 'object', properties: {}, additionalProperties: false };
+        const register = (tool) => Promise.resolve(context.registerTool(tool)).catch(() => {});
+        register({ name: 'start_stopwatch', title: '스톱워치 시작', description: '현재 스톱워치를 시작하거나 이어서 측정합니다.', inputSchema: noInput, annotations: { readOnlyHint: false, untrustedContentHint: false }, execute: () => { start(); return { running: true, elapsed: format(elapsed(), true) }; } });
+        register({ name: 'pause_stopwatch', title: '스톱워치 일시정지', description: '측정 중인 스톱워치를 일시정지합니다.', inputSchema: noInput, annotations: { readOnlyHint: false, untrustedContentHint: false }, execute: () => { pause(); return { running: false, elapsed: format(elapsed(), true) }; } });
+        register({ name: 'record_lap', title: '랩 기록', description: '측정 중인 스톱워치에 새 랩 기록을 추가합니다.', inputSchema: noInput, annotations: { readOnlyHint: false, untrustedContentHint: false }, execute: () => { const total = recordLap(); if (total === null) throw new Error('스톱워치가 실행 중이 아닙니다.'); return { lap: lapTimes.length, elapsed: format(total, true) }; } });
+        register({ name: 'reset_stopwatch', title: '스톱워치 재설정', description: '경과 시간과 모든 랩 기록을 0으로 초기화합니다.', inputSchema: noInput, annotations: { readOnlyHint: false, untrustedContentHint: false }, execute: () => { reset(); return { running: false, elapsed: '00:00.00', laps: 0 }; } });
+      }
+
+      renderTime();
+      renderLaps();
+      syncControls();
+      registerWebMcpTools();
+    })();
+  </script>
+</body>
+</html>
